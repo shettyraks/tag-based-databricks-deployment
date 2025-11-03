@@ -71,11 +71,6 @@ jobs:
         echo "Running SQL migrations for development environment..."
         python deploy.py --environment dev --skip-backup
       env:
-        DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST_DEV }}
-        DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN_DEV }}
-        HTTP_PATH: ${{ secrets.HTTP_PATH_DEV }}
-        SQL_USER: ${{ secrets.SQL_USER_DEV }}
-        SQL_PASSWORD: ${{ secrets.SQL_PASSWORD_DEV }}
         DATABRICKS_HOST_DEV: ${{ secrets.DATABRICKS_HOST_DEV }}
         DATABRICKS_TOKEN_DEV: ${{ secrets.DATABRICKS_TOKEN_DEV }}
         HTTP_PATH_DEV: ${{ secrets.HTTP_PATH_DEV }}
