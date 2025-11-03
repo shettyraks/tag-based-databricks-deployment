@@ -5,12 +5,6 @@ local.env
 .env
 *.env.local
 
-# Temporary Flyway configuration files
-flyway_local_*.conf
-flyway.conf
-flyway_*_test.conf
-flyway_*.conf
-
 # JDBC drivers (should be downloaded, not versioned)
 *.jar
 
@@ -44,7 +38,3 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp
-
-# Large Flyway files (too big for GitHub)
-flyway-commandline-*.tar.gz
-flyway-*/
