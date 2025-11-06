@@ -138,8 +138,10 @@ class DeploymentConfig:
         
         # Load SQL connection credentials (can be token or service principal)
         self.http_path = os.environ.get(f'HTTP_PATH_{environment.upper()}')
-        self.sql_user = os.environ.get(f'SQL_USER_{environment.upper()}')
-        self.sql_password = os.environ.get(f'SQL_PASSWORD_{environment.upper()}')
+        # SQL_USER defaults to 'token' if not set
+        self.sql_user = os.environ.get(f'SQL_USER_{environment.upper()}', 'token')
+        # SQL_PASSWORD defaults to DATABRICKS_TOKEN if not set
+        self.sql_password = os.environ.get(f'SQL_PASSWORD_{environment.upper()}', self.databricks_token)
     
     def _determine_auth_method(self) -> str:
         """Determine which authentication method to use.
@@ -234,10 +236,10 @@ class DeploymentConfig:
             # Token authentication
             if not self.databricks_token:
                 errors.append("DATABRICKS_TOKEN not set")
-            if not self.sql_user:
-                errors.append(f"SQL_USER_{env_suffix} not set")
+            # SQL_USER defaults to 'token', so we only need to check SQL_PASSWORD
+            # SQL_PASSWORD defaults to DATABRICKS_TOKEN, so if token is set, password will be set
             if not self.sql_password:
-                errors.append(f"SQL_PASSWORD_{env_suffix} not set")
+                errors.append(f"SQL_PASSWORD_{env_suffix} not set (defaults to DATABRICKS_TOKEN if not provided)")
         
         if errors:
             error_msg = f"Missing required credentials for {self.environment} environment:\n" + "\n".join(f"  - {e}" for e in errors)
