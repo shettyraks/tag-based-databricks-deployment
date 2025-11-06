@@ -138,10 +138,12 @@ class DeploymentConfig:
         
         # Load SQL connection credentials (can be token or service principal)
         self.http_path = os.environ.get(f'HTTP_PATH_{environment.upper()}')
-        # SQL_USER defaults to 'token' if not set
-        self.sql_user = os.environ.get(f'SQL_USER_{environment.upper()}', 'token')
-        # SQL_PASSWORD defaults to DATABRICKS_TOKEN if not set
-        self.sql_password = os.environ.get(f'SQL_PASSWORD_{environment.upper()}', self.databricks_token)
+        # SQL_USER defaults to 'token' if not set or empty
+        sql_user_env = os.environ.get(f'SQL_USER_{environment.upper()}')
+        self.sql_user = sql_user_env if sql_user_env else 'token'
+        # SQL_PASSWORD defaults to DATABRICKS_TOKEN if not set or empty
+        sql_password_env = os.environ.get(f'SQL_PASSWORD_{environment.upper()}')
+        self.sql_password = sql_password_env if sql_password_env else self.databricks_token
     
     def _determine_auth_method(self) -> str:
         """Determine which authentication method to use.

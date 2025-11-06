@@ -74,8 +74,6 @@ jobs:
         DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
         DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
         HTTP_PATH_DEV: ${{ secrets.HTTP_PATH_DEV }}
-        SQL_USER_DEV: ${{ secrets.SQL_USER_DEV }}
-        SQL_PASSWORD_DEV: ${{ secrets.SQL_PASSWORD_DEV }}
     
     - name: Deploy Databricks Assets
       run: |
