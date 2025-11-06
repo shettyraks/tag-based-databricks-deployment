@@ -56,6 +56,38 @@ jobs:
         DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST_DEV }}
         DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN_DEV }}
     
+    - name: Validate Secrets
+      run: |
+        echo "Validating required secrets are configured..."
+        missing_secrets=()
+        if [ -z "${{ secrets.DATABRICKS_HOST_DEV }}" ]; then
+          missing_secrets+=("DATABRICKS_HOST_DEV")
+        fi
+        if [ -z "${{ secrets.DATABRICKS_TOKEN_DEV }}" ]; then
+          missing_secrets+=("DATABRICKS_TOKEN_DEV")
+        fi
+        if [ -z "${{ secrets.HTTP_PATH_DEV }}" ]; then
+          missing_secrets+=("HTTP_PATH_DEV")
+        fi
+        if [ -z "${{ secrets.SQL_USER_DEV }}" ]; then
+          missing_secrets+=("SQL_USER_DEV")
+        fi
+        if [ -z "${{ secrets.SQL_PASSWORD_DEV }}" ]; then
+          missing_secrets+=("SQL_PASSWORD_DEV")
+        fi
+        
+        if [ ${#missing_secrets[@]} -ne 0 ]; then
+          echo "❌ Missing required secrets:"
+          for secret in "${missing_secrets[@]}"; do
+            echo "  - $secret"
+          done
+          echo ""
+          echo "Please configure these secrets in GitHub repository settings:"
+          echo "Settings → Secrets and variables → Actions → New repository secret"
+          exit 1
+        fi
+        echo "✅ All required secrets are configured"
+    
     - name: Load Configuration
       id: config
       run: |

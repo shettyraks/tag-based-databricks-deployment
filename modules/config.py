@@ -209,37 +209,41 @@ class DeploymentConfig:
             ValueError: If required credentials are missing
         """
         errors = []
+        env_suffix = self.environment.upper()
         
         if not self.databricks_host:
-            errors.append("DATABRICKS_HOST not set")
+            errors.append(f"DATABRICKS_HOST_{env_suffix} not set")
         
         if not self.http_path:
-            errors.append("HTTP_PATH not set")
+            errors.append(f"HTTP_PATH_{env_suffix} not set")
         
         # Validate based on authentication method
         if self.auth_method == 'service_principal':
             # Service Principal authentication
             if not self.service_principal_client_id:
-                errors.append("SERVICE_PRINCIPAL_CLIENT_ID not set")
+                errors.append(f"SERVICE_PRINCIPAL_CLIENT_ID_{env_suffix} not set")
             if not self.service_principal_client_secret:
-                errors.append("SERVICE_PRINCIPAL_CLIENT_SECRET not set")
+                errors.append(f"SERVICE_PRINCIPAL_CLIENT_SECRET_{env_suffix} not set")
             if not self.service_principal_tenant_id:
-                errors.append("SERVICE_PRINCIPAL_TENANT_ID not set")
+                errors.append(f"SERVICE_PRINCIPAL_TENANT_ID_{env_suffix} not set")
             
             # For DABs, we need either token or service principal for Databricks CLI
             if not self.databricks_token:
-                errors.append("DATABRICKS_TOKEN not set (required for CLI even with service principal)")
+                errors.append(f"DATABRICKS_TOKEN_{env_suffix} not set (required for CLI even with service principal)")
         else:
             # Token authentication
             if not self.databricks_token:
-                errors.append("DATABRICKS_TOKEN not set")
+                errors.append(f"DATABRICKS_TOKEN_{env_suffix} not set")
             if not self.sql_user:
-                errors.append("SQL_USER not set")
+                errors.append(f"SQL_USER_{env_suffix} not set")
             if not self.sql_password:
-                errors.append("SQL_PASSWORD not set")
+                errors.append(f"SQL_PASSWORD_{env_suffix} not set")
         
         if errors:
-            raise ValueError(f"Missing required credentials:\n" + "\n".join(f"  - {e}" for e in errors))
+            error_msg = f"Missing required credentials for {self.environment} environment:\n" + "\n".join(f"  - {e}" for e in errors)
+            error_msg += f"\n\nPlease configure these secrets in GitHub repository settings:\n"
+            error_msg += f"Settings → Secrets and variables → Actions → Environment secrets (for '{self.environment}' environment)"
+            raise ValueError(error_msg)
         
         return True
     
