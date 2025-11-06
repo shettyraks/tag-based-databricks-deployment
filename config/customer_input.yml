@@ -3,7 +3,7 @@
 
 environments:
   dev:
-    customer: PANDs
+    customer: test
     catalog: rio_cicd_setup_dev
     schemas:
       - inventory
