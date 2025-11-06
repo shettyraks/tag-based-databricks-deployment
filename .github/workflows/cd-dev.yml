@@ -49,44 +49,12 @@ jobs:
     - name: Configure Databricks CLI
       run: |
         echo "Configuring Databricks CLI with environment variables..."
-        export DATABRICKS_HOST="${{ secrets.DATABRICKS_HOST_DEV }}"
-        export DATABRICKS_TOKEN="${{ secrets.DATABRICKS_TOKEN_DEV }}"
+        export DATABRICKS_HOST="${{ secrets.DATABRICKS_HOST }}"
+        export DATABRICKS_TOKEN="${{ secrets.DATABRICKS_TOKEN }}"
         echo "✅ Databricks CLI configured successfully"
       env:
-        DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST_DEV }}
-        DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN_DEV }}
-    
-    - name: Validate Secrets
-      run: |
-        echo "Validating required secrets are configured..."
-        missing_secrets=()
-        if [ -z "${{ secrets.DATABRICKS_HOST_DEV }}" ]; then
-          missing_secrets+=("DATABRICKS_HOST_DEV")
-        fi
-        if [ -z "${{ secrets.DATABRICKS_TOKEN_DEV }}" ]; then
-          missing_secrets+=("DATABRICKS_TOKEN_DEV")
-        fi
-        if [ -z "${{ secrets.HTTP_PATH_DEV }}" ]; then
-          missing_secrets+=("HTTP_PATH_DEV")
-        fi
-        if [ -z "${{ secrets.SQL_USER_DEV }}" ]; then
-          missing_secrets+=("SQL_USER_DEV")
-        fi
-        if [ -z "${{ secrets.SQL_PASSWORD_DEV }}" ]; then
-          missing_secrets+=("SQL_PASSWORD_DEV")
-        fi
-        
-        if [ ${#missing_secrets[@]} -ne 0 ]; then
-          echo "❌ Missing required secrets:"
-          for secret in "${missing_secrets[@]}"; do
-            echo "  - $secret"
-          done
-          echo ""
-          echo "Please configure these secrets in GitHub repository settings:"
-          echo "Settings → Secrets and variables → Actions → New repository secret"
-          exit 1
-        fi
-        echo "✅ All required secrets are configured"
+        DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+        DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
     
     - name: Load Configuration
       id: config
@@ -103,8 +71,8 @@ jobs:
         echo "Running SQL migrations for development environment..."
         python deploy.py --environment dev --skip-backup
       env:
-        DATABRICKS_HOST_DEV: ${{ secrets.DATABRICKS_HOST_DEV }}
-        DATABRICKS_TOKEN_DEV: ${{ secrets.DATABRICKS_TOKEN_DEV }}
+        DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+        DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
         HTTP_PATH_DEV: ${{ secrets.HTTP_PATH_DEV }}
         SQL_USER_DEV: ${{ secrets.SQL_USER_DEV }}
         SQL_PASSWORD_DEV: ${{ secrets.SQL_PASSWORD_DEV }}
@@ -116,8 +84,8 @@ jobs:
         databricks bundle deploy --target dev --var="customer=${{ steps.config.outputs.CUSTOMER }}" --var="catalog=${{ steps.config.outputs.CATALOG }}"
         databricks bundle summary --target dev
       env:
-        DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST_DEV }}
-        DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN_DEV }}
+        DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+        DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
     
     - name: Deployment Complete
       run: |

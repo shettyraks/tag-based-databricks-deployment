@@ -125,8 +125,8 @@ class DeploymentConfig:
         self.env_config = self.config_manager.get_environment(environment)
         
         # Load Databricks credentials from environment
-        self.databricks_host = os.environ.get(f'DATABRICKS_HOST_{environment.upper()}')
-        self.databricks_token = os.environ.get(f'DATABRICKS_TOKEN_{environment.upper()}')
+        self.databricks_host = os.environ.get('DATABRICKS_HOST')
+        self.databricks_token = os.environ.get('DATABRICKS_TOKEN')
         
         # Service Principal credentials (alternative to token)
         self.service_principal_client_id = os.environ.get(f'SERVICE_PRINCIPAL_CLIENT_ID_{environment.upper()}')
@@ -212,7 +212,7 @@ class DeploymentConfig:
         env_suffix = self.environment.upper()
         
         if not self.databricks_host:
-            errors.append(f"DATABRICKS_HOST_{env_suffix} not set")
+            errors.append("DATABRICKS_HOST not set")
         
         if not self.http_path:
             errors.append(f"HTTP_PATH_{env_suffix} not set")
@@ -229,11 +229,11 @@ class DeploymentConfig:
             
             # For DABs, we need either token or service principal for Databricks CLI
             if not self.databricks_token:
-                errors.append(f"DATABRICKS_TOKEN_{env_suffix} not set (required for CLI even with service principal)")
+                errors.append("DATABRICKS_TOKEN not set (required for CLI even with service principal)")
         else:
             # Token authentication
             if not self.databricks_token:
-                errors.append(f"DATABRICKS_TOKEN_{env_suffix} not set")
+                errors.append("DATABRICKS_TOKEN not set")
             if not self.sql_user:
                 errors.append(f"SQL_USER_{env_suffix} not set")
             if not self.sql_password:

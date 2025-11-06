@@ -50,8 +50,8 @@ jobs:
       run: |
         echo "Configuring Databricks CLI for UAT environment..."
       env:
-        DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST_UAT }}
-        DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN_UAT }}
+        DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+        DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
     
     - name: Load Configuration
       id: config
@@ -68,8 +68,8 @@ jobs:
         echo "Running SQL migrations for UAT environment..."
         python deploy.py --environment uat --skip-backup
       env:
-        DATABRICKS_HOST_UAT: ${{ secrets.DATABRICKS_HOST_UAT }}
-        DATABRICKS_TOKEN_UAT: ${{ secrets.DATABRICKS_TOKEN_UAT }}
+        DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+        DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
         HTTP_PATH_UAT: ${{ secrets.HTTP_PATH_UAT }}
         SQL_USER_UAT: ${{ secrets.SQL_USER_UAT }}
         SQL_PASSWORD_UAT: ${{ secrets.SQL_PASSWORD_UAT }}
@@ -80,13 +80,13 @@ jobs:
         databricks bundle deploy --target uat --var="customer=${{ steps.config.outputs.CUSTOMER }}" --var="catalog=${{ steps.config.outputs.CATALOG }}"
         databricks bundle summary --target uat
       env:
-        DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST_UAT }}
-        DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN_UAT }}
+        DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+        DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
     
     - name: Validate Deployment
       run: |
         echo "Validating deployment for UAT..."
         python scripts/validate_deployment.py --environment uat
       env:
-        DATABRICKS_HOST_UAT: ${{ secrets.DATABRICKS_HOST_UAT }}
-        DATABRICKS_TOKEN_UAT: ${{ secrets.DATABRICKS_TOKEN_UAT }}
+        DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+        DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}

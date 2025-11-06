@@ -50,8 +50,8 @@ jobs:
       run: |
         echo "Configuring Databricks CLI for production environment..."
       env:
-        DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST_PROD }}
-        DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN_PROD }}
+        DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+        DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
     
     - name: Load Configuration
       id: config
@@ -68,16 +68,16 @@ jobs:
         echo "Creating backup before production deployment..."
         python scripts/create_backup.py --environment prod
       env:
-        DATABRICKS_HOST_PROD: ${{ secrets.DATABRICKS_HOST_PROD }}
-        DATABRICKS_TOKEN_PROD: ${{ secrets.DATABRICKS_TOKEN_PROD }}
+        DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+        DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
     
     - name: Run SQL Migrations
       run: |
         echo "Running SQL migrations for production environment..."
         python deploy.py --environment prod
       env:
-        DATABRICKS_HOST_PROD: ${{ secrets.DATABRICKS_HOST_PROD }}
-        DATABRICKS_TOKEN_PROD: ${{ secrets.DATABRICKS_TOKEN_PROD }}
+        DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+        DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
         HTTP_PATH_PROD: ${{ secrets.HTTP_PATH_PROD }}
         SQL_USER_PROD: ${{ secrets.SQL_USER_PROD }}
         SQL_PASSWORD_PROD: ${{ secrets.SQL_PASSWORD_PROD }}
@@ -88,24 +88,24 @@ jobs:
         databricks bundle deploy --target prod --var="customer=${{ steps.config.outputs.CUSTOMER }}" --var="catalog=${{ steps.config.outputs.CATALOG }}"
         databricks bundle summary --target prod
       env:
-        DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST_PROD }}
-        DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN_PROD }}
+        DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+        DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
     
     - name: Validate Deployment
       run: |
         echo "Validating deployment for production..."
         python scripts/validate_deployment.py --environment prod
       env:
-        DATABRICKS_HOST_PROD: ${{ secrets.DATABRICKS_HOST_PROD }}
-        DATABRICKS_TOKEN_PROD: ${{ secrets.DATABRICKS_TOKEN_PROD }}
+        DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+        DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
     
     - name: Run Smoke Tests
       run: |
         echo "Running smoke tests for production..."
         python scripts/run_smoke_tests.py --environment prod
       env:
-        DATABRICKS_HOST_PROD: ${{ secrets.DATABRICKS_HOST_PROD }}
-        DATABRICKS_TOKEN_PROD: ${{ secrets.DATABRICKS_TOKEN_PROD }}
+        DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+        DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
     
     - name: Deployment Summary
       run: |

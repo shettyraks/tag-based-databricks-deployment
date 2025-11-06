@@ -50,8 +50,8 @@ jobs:
       run: |
         echo "Configuring Databricks CLI for SIT environment..."
       env:
-        DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST_SIT }}
-        DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN_SIT }}
+        DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+        DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
     
     - name: Load Configuration
       id: config
@@ -68,8 +68,8 @@ jobs:
         echo "Running SQL migrations for SIT environment..."
         python deploy.py --environment sit --skip-backup
       env:
-        DATABRICKS_HOST_SIT: ${{ secrets.DATABRICKS_HOST_SIT }}
-        DATABRICKS_TOKEN_SIT: ${{ secrets.DATABRICKS_TOKEN_SIT }}
+        DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+        DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
         HTTP_PATH_SIT: ${{ secrets.HTTP_PATH_SIT }}
         SQL_USER_SIT: ${{ secrets.SQL_USER_SIT }}
         SQL_PASSWORD_SIT: ${{ secrets.SQL_PASSWORD_SIT }}
@@ -80,13 +80,13 @@ jobs:
         databricks bundle deploy --target sit --var="customer=${{ steps.config.outputs.CUSTOMER }}" --var="catalog=${{ steps.config.outputs.CATALOG }}"
         databricks bundle summary --target sit
       env:
-        DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST_SIT }}
-        DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN_SIT }}
+        DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+        DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
     
     - name: Validate Deployment
       run: |
         echo "Validating deployment for SIT..."
         python scripts/validate_deployment.py --environment sit
       env:
-        DATABRICKS_HOST_SIT: ${{ secrets.DATABRICKS_HOST_SIT }}
-        DATABRICKS_TOKEN_SIT: ${{ secrets.DATABRICKS_TOKEN_SIT }}
+        DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+        DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
