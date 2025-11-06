@@ -80,8 +80,11 @@ class ConfigManager:
         
         return self._environments.copy()
     
-    def validate(self) -> bool:
+    def validate(self, environment: Optional[str] = None) -> bool:
         """Validate configuration data.
+        
+        Args:
+            environment: Optional environment name to validate. If None, validates all environments.
         
         Returns:
             True if configuration is valid
@@ -94,7 +97,13 @@ class ConfigManager:
         
         errors = []
         
-        for env_name, env_config in self._environments.items():
+        # If environment is specified, only validate that environment
+        environments_to_check = {environment: self._environments[environment]} if environment else self._environments
+        
+        if environment and environment not in self._environments:
+            raise ValueError(f"Environment '{environment}' not found in config")
+        
+        for env_name, env_config in environments_to_check.items():
             # Check for placeholder values
             if 'TBD' in env_config.customer or 'CHANGE_ME' in env_config.customer:
                 errors.append(f"Environment '{env_name}' has placeholder customer value")

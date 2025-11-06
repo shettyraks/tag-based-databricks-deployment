@@ -36,8 +36,8 @@ class DeploymentOrchestrator:
         # Validate credentials
         self.config.validate()
         
-        # Validate environment config
-        self.config.config_manager.validate()
+        # Validate environment config (only for the current environment)
+        self.config.config_manager.validate(self.environment)
         
         print("✅ Configuration validation passed")
         return True
