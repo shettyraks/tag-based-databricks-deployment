@@ -1,0 +1,23 @@
+# SQL File Version Mapping
+# Maps SQL files to version tags
+# Only SQL files listed for a version will be deployed when that version is tagged
+
+versions:
+  v1.0.0:
+    sql_files:
+      - src/Inventory/sql_deployment/V2__create_inventory_transaction_table.sql
+      - src/Inventory/sql_deployment/V3__create_calendar_dim_table.sql
+      - src/MasterData/sql_deployment/R__create_safe_to_decimal_udf.sql
+  
+  v1.0.1:
+    sql_files:
+      - src/Inventory/sql_deployment/V4__insert_inventory_header_sample_data.sql
+  
+  v1.0.2:
+    sql_files:
+      - src/Inventory/sql_deployment/R__create_inventory_txn_header_view.sql
+      - src/Inventory/sql_deployment/R__create_inventory_txn_calendar_view.sql
+
+# Repeatable migrations (R__) are always included if they exist
+# Versioned migrations (V{number}__) are only included if listed in the version
+

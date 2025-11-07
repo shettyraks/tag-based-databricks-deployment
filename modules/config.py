@@ -2,6 +2,7 @@
 
 import os
 import yaml
+import subprocess
 from pathlib import Path
 from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
@@ -118,6 +119,162 @@ class ConfigManager:
             raise ValueError(f"Configuration validation failed:\n" + "\n".join(f"  - {e}" for e in errors))
         
         return True
+    
+    def get_sql_files_for_version(self, version: str, include_repeatable: bool = True) -> List[str]:
+        """Get SQL files for a specific version using git history.
+        
+        This method automatically detects SQL files that exist at a specific git tag,
+        eliminating the need to manually maintain version mappings.
+        
+        Args:
+            version: Version tag (e.g., 'v1.0.0')
+            include_repeatable: Whether to include repeatable migrations (R__*.sql)
+        
+        Returns:
+            List of SQL file paths for the specified version
+        """
+        # First, try to get SQL files from git at the specific tag
+        sql_files = self._get_sql_files_from_git_tag(version)
+        
+        if sql_files:
+            print(f"✅ Found {len(sql_files)} SQL files for version {version} using git")
+            return sorted(sql_files)
+        
+        # Fallback: if git tag doesn't exist or can't be accessed, use all files
+        print(f"⚠️ Could not determine SQL files for version {version} from git. Deploying all SQL files.")
+        return self._get_all_sql_files(include_repeatable)
+    
+    def _get_sql_files_from_git_tag(self, tag: str) -> List[str]:
+        """Get SQL files that exist at a specific git tag.
+        
+        Args:
+            tag: Git tag name
+        
+        Returns:
+            List of SQL file paths that exist at the tag, or empty list if tag doesn't exist
+        """
+        sql_files = []
+        
+        try:
+            # Check if tag exists
+            result = subprocess.run(
+                ['git', 'rev-parse', '--verify', f'{tag}^{{}}'],
+                capture_output=True,
+                text=True,
+                check=False
+            )
+            
+            if result.returncode != 0:
+                # Tag doesn't exist
+                return []
+            
+            # Get all SQL files at this tag (git ls-tree doesn't support glob, so we filter manually)
+            result = subprocess.run(
+                ['git', 'ls-tree', '-r', '--name-only', tag],
+                capture_output=True,
+                text=True,
+                check=False
+            )
+            
+            if result.returncode == 0 and result.stdout.strip():
+                all_files = [f.strip() for f in result.stdout.strip().split('\n') if f.strip()]
+                # Filter for SQL files in sql_deployment directories
+                sql_files = [
+                    f for f in all_files 
+                    if '/sql_deployment/' in f and f.endswith('.sql')
+                ]
+            
+            # Remove duplicates
+            sql_files = list(set(sql_files))
+            
+        except Exception as e:
+            print(f"⚠️ Error getting SQL files from git tag {tag}: {e}")
+            return []
+        
+        return sql_files
+    
+    def get_sql_files_between_tags(self, from_tag: Optional[str], to_tag: str, include_repeatable: bool = True) -> List[str]:
+        """Get SQL files that were added or modified between two tags.
+        
+        Args:
+            from_tag: Starting tag (None means from beginning)
+            to_tag: Ending tag
+            include_repeatable: Whether to include repeatable migrations
+        
+        Returns:
+            List of SQL file paths changed between tags
+        """
+        sql_files = []
+        
+        try:
+            if from_tag:
+                # Get files added between two tags
+                result = subprocess.run(
+                    ['git', 'diff', '--name-only', '--diff-filter=A', f'{from_tag}..{to_tag}'],
+                    capture_output=True,
+                    text=True,
+                    check=False
+                )
+            else:
+                # Get all files up to the tag
+                result = subprocess.run(
+                    ['git', 'ls-tree', '-r', '--name-only', to_tag],
+                    capture_output=True,
+                    text=True,
+                    check=False
+                )
+            
+            if result.returncode == 0 and result.stdout.strip():
+                all_files = [f.strip() for f in result.stdout.strip().split('\n') if f.strip()]
+                # Filter for SQL files in sql_deployment directories
+                sql_files = [
+                    f for f in all_files 
+                    if '/sql_deployment/' in f and f.endswith('.sql')
+                ]
+            
+            # Filter repeatable migrations if needed
+            if not include_repeatable:
+                sql_files = [f for f in sql_files if not Path(f).name.startswith('R__')]
+            
+        except Exception as e:
+            print(f"⚠️ Error getting SQL files between tags: {e}")
+            return []
+        
+        return sorted(list(set(sql_files)))
+    
+    def _get_all_sql_files(self, include_repeatable: bool = True) -> List[str]:
+        """Get all SQL files in the repository.
+        
+        Args:
+            include_repeatable: Whether to include repeatable migrations
+        
+        Returns:
+            List of all SQL file paths
+        """
+        sql_files = []
+        sql_dirs = Path('src').rglob('sql_deployment')
+        
+        for sql_dir in sql_dirs:
+            for sql_file in sql_dir.glob('*.sql'):
+                if include_repeatable or not sql_file.name.startswith('R__'):
+                    sql_files.append(str(sql_file))
+        
+        return sorted(sql_files)
+    
+    def _get_repeatable_sql_files(self) -> List[str]:
+        """Get all repeatable SQL migration files (R__*.sql).
+        
+        Returns:
+            List of repeatable SQL file paths
+        """
+        repeatable_files = []
+        sql_dirs = Path('src').rglob('sql_deployment')
+        
+        for sql_dir in sql_dirs:
+            for sql_file in sql_dir.glob('R__*.sql'):
+                repeatable_files.append(str(sql_file))
+        
+        return sorted(repeatable_files)
 
 
 class DeploymentConfig:

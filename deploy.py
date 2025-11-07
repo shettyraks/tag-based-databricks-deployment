@@ -6,9 +6,51 @@ Orchestrates the complete deployment process with modular architecture.
 
 import sys
 import argparse
+import subprocess
 from pathlib import Path
+from typing import Optional
 
 from modules.deployment_orchestrator import DeploymentOrchestrator
+
+
+def get_current_git_tag() -> Optional[str]:
+    """Get the current git tag if HEAD is on a tag.
+    
+    Returns:
+        Tag name if HEAD is on a tag, None otherwise
+    """
+    try:
+        result = subprocess.run(
+            ['git', 'describe', '--exact-match', '--tags', 'HEAD'],
+            capture_output=True,
+            text=True,
+            check=False
+        )
+        if result.returncode == 0:
+            return result.stdout.strip()
+    except Exception:
+        pass
+    return None
+
+
+def get_latest_tag() -> Optional[str]:
+    """Get the latest git tag.
+    
+    Returns:
+        Latest tag name or None
+    """
+    try:
+        result = subprocess.run(
+            ['git', 'describe', '--tags', '--abbrev=0'],
+            capture_output=True,
+            text=True,
+            check=False
+        )
+        if result.returncode == 0:
+            return result.stdout.strip()
+    except Exception:
+        pass
+    return None
 
 
 def main():
@@ -69,11 +111,29 @@ Examples:
         help='Enable debug output'
     )
     
+    parser.add_argument(
+        '--version',
+        type=str,
+        default=None,
+        help='Version tag to deploy (e.g., v1.0.0). If not specified, uses current git tag or latest tag.'
+    )
+    
     args = parser.parse_args()
+    
+    # Determine version to use
+    version = args.version
+    if not version:
+        version = get_current_git_tag()
+    if not version:
+        version = get_latest_tag()
+    if version:
+        print(f"📦 Deploying SQL files for version: {version}")
+    else:
+        print("⚠️ No version specified and no git tag found. Deploying all SQL files.")
     
     try:
         # Create orchestrator
-        orchestrator = DeploymentOrchestrator(args.environment)
+        orchestrator = DeploymentOrchestrator(args.environment, version=version)
         
         # Run deployment
         success = orchestrator.deploy(

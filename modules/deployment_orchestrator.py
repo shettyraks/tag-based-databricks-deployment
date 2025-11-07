@@ -9,15 +9,27 @@ from .databricks_client import DatabricksClient
 class DeploymentOrchestrator:
     """Orchestrates the deployment process."""
     
-    def __init__(self, environment: str):
+    def __init__(self, environment: str, version: Optional[str] = None):
         """Initialize deployment orchestrator.
         
         Args:
             environment: Environment name (dev, sit, uat, prod)
+            version: Optional version tag for SQL file filtering
         """
         self.environment = environment
+        self.version = version
         self.config = DeploymentConfig(environment)
         self.databricks_client = DatabricksClient(self.config)
+        
+        # Get SQL files for this version if version is specified
+        if self.version:
+            config_manager = ConfigManager()
+            self.sql_files = config_manager.get_sql_files_for_version(self.version)
+            print(f"📋 SQL files to deploy for version {self.version}:")
+            for sql_file in self.sql_files:
+                print(f"  - {sql_file}")
+        else:
+            self.sql_files = None
         
         # Deployment metadata
         self.metadata: Dict[str, Any] = {}
